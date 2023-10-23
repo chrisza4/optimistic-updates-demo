@@ -15,25 +15,23 @@ import {
   TextField,
 } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
-
-type Ticket = {
-  title: string
-  description: string
-  dueDate: string
-  requester: string
-  createdDate: Date
-}
+import TicketForm from "./TicketForm"
+import { generateMockTicket, Ticket } from "./Ticket"
 
 const initialTicket: Ticket = {
+  id: "",
   title: "",
   description: "",
-  dueDate: "",
+  dueDate: new Date(),
   requester: "",
   createdDate: new Date(),
 }
 
 const TicketApp = () => {
-  const [tickets, setTickets] = useState([initialTicket])
+  const [tickets, setTickets] = useState([
+    generateMockTicket(),
+    generateMockTicket(),
+  ])
   const [open, setOpen] = useState(false)
   const [currentTicket, setCurrentTicket] = useState(initialTicket)
 
@@ -55,7 +53,8 @@ const TicketApp = () => {
   }
 
   return (
-    <div>
+    <div style={{ margin: 40 }}>
+      <h1>Ticket App</h1>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -73,7 +72,7 @@ const TicketApp = () => {
               <TableRow key={index}>
                 <TableCell>{ticket.title}</TableCell>
                 <TableCell>{ticket.description}</TableCell>
-                <TableCell>{ticket.dueDate}</TableCell>
+                <TableCell>{ticket.dueDate.toISOString()}</TableCell>
                 <TableCell>{ticket.requester}</TableCell>
                 <TableCell>{ticket.createdDate.toISOString()}</TableCell>
                 <TableCell>
@@ -93,68 +92,7 @@ const TicketApp = () => {
       </TableContainer>
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Edit Ticket</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Title"
-            fullWidth
-            margin="normal"
-            value={currentTicket.title}
-            onChange={(e) =>
-              setCurrentTicket({ ...currentTicket, title: e.target.value })
-            }
-          />
-          <TextField
-            label="Description"
-            fullWidth
-            margin="normal"
-            value={currentTicket.description}
-            onChange={(e) =>
-              setCurrentTicket({
-                ...currentTicket,
-                description: e.target.value,
-              })
-            }
-          />
-          <TextField
-            label="Due Date"
-            fullWidth
-            margin="normal"
-            value={currentTicket.dueDate}
-            onChange={(e) =>
-              setCurrentTicket({ ...currentTicket, dueDate: e.target.value })
-            }
-          />
-          <TextField
-            label="Requester"
-            fullWidth
-            margin="normal"
-            value={currentTicket.requester}
-            onChange={(e) =>
-              setCurrentTicket({ ...currentTicket, requester: e.target.value })
-            }
-          />
-          <TextField
-            label="Created Date"
-            fullWidth
-            margin="normal"
-            value={currentTicket.createdDate}
-            onChange={(e) =>
-              setCurrentTicket({
-                ...currentTicket,
-                createdDate: new Date(e.target.value),
-              })
-            }
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} color="primary">
-            Save
-          </Button>
-        </DialogActions>
+        {open && <TicketForm ticket={currentTicket} onClose={handleClose} />}
       </Dialog>
     </div>
   )
