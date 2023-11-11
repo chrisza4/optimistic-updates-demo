@@ -10,7 +10,7 @@ function delay(ms: number): Promise<void> {
 export async function saveTicket(_ticket: Ticket) {
   await delay(3000)
   const m = Math.random()
-  if (m < 0.1) {
+  if (m < 1) {
     throw new Error("API Error")
   }
   return
