@@ -2,7 +2,6 @@
 import { create } from "zustand"
 import { Ticket, generateMockTicket } from "./Ticket"
 
-const mockTickets = [generateMockTicket(), generateMockTicket()]
 type withId = {
   id: string
 }
@@ -24,16 +23,26 @@ type TicketStore = {
   storeTicketInOptimisticUpdates: (ticket: Ticket) => void
   settledTicket: (ticket: Ticket) => void
   markTicketSaveFailed: (id: string) => void
+  setInitialTickets: (tickets: Ticket[]) => void
 }
 export const useTicketStore = create<TicketStore>((set) => ({
-  tickets: toMapById(mockTickets),
+  tickets: {},
   optimisticTickets: {},
+  setInitialTickets: (tickets: Ticket[]) =>
+    set((state) => {
+      return {
+        ...state,
+        tickets: toMapById(tickets),
+        optimisticTickets: {},
+      }
+    }),
   storeTicketInOptimisticUpdates: (ticket: Ticket) => {
     set((state) => {
       const { [ticket.id]: __, ...newTickets } = state.tickets
       const { [ticket.id]: _, ...newOptimisticTickets } =
         state.optimisticTickets
       return {
+        ...state,
         tickets: newTickets,
         optimisticTickets: {
           ...newOptimisticTickets,
@@ -51,6 +60,7 @@ export const useTicketStore = create<TicketStore>((set) => ({
       const { [ticket.id]: _, ...newOptimisticTickets } =
         state.optimisticTickets
       return {
+        ...state,
         tickets: { ...newTickets, [ticket.id]: ticket },
         optimisticTickets: newOptimisticTickets,
       }
