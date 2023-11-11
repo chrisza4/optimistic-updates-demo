@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useCallback, useState } from "react"
 import {
   Table,
   TableBody,
@@ -9,14 +9,16 @@ import {
   Paper,
   Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
 } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
-import TicketForm from "./TicketForm"
+import TicketForm from "./TicketFormV3"
 import { generateMockTicket, Ticket } from "./Ticket"
+import { LocalizationProvider } from "@mui/x-date-pickers"
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
+import { QueryClient, QueryClientProvider, useMutation } from "react-query"
+import { saveTicket } from "./TicketApi"
+
+const queryClient = new QueryClient()
 
 const initialTicket: Ticket = {
   id: "",
@@ -27,11 +29,27 @@ const initialTicket: Ticket = {
   createdDate: new Date(),
 }
 
+const App = () => {
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <QueryClientProvider client={queryClient}>
+        <TicketApp />
+      </QueryClientProvider>
+    </LocalizationProvider>
+  )
+}
+
 const TicketApp = () => {
-  const [tickets, setTickets] = useState([
-    generateMockTicket(),
-    generateMockTicket(),
-  ])
+  const saveTicketMutation = useMutation(saveTicket)
+
+  const handleSave = useCallback(
+    async (ticket: Ticket) => {
+      await saveTicketMutation.mutateAsync(ticket)
+      handleClose()
+    },
+    [saveTicketMutation],
+  )
+  const [tickets] = useState([generateMockTicket(), generateMockTicket()])
   const [open, setOpen] = useState(false)
   const [currentTicket, setCurrentTicket] = useState(initialTicket)
 
@@ -41,14 +59,6 @@ const TicketApp = () => {
   }
 
   const handleClose = () => {
-    setOpen(false)
-  }
-
-  const handleSave = () => {
-    // Update or save the ticket logic goes here
-    // For simplicity, let's assume it always adds a new ticket
-    setTickets([...tickets, currentTicket])
-    setCurrentTicket(initialTicket)
     setOpen(false)
   }
 
@@ -72,9 +82,9 @@ const TicketApp = () => {
               <TableRow key={index}>
                 <TableCell>{ticket.title}</TableCell>
                 <TableCell>{ticket.description}</TableCell>
-                <TableCell>{ticket.dueDate.toISOString()}</TableCell>
+                <TableCell>{ticket.dueDate?.toISOString()}</TableCell>
                 <TableCell>{ticket.requester}</TableCell>
-                <TableCell>{ticket.createdDate.toISOString()}</TableCell>
+                <TableCell>{ticket.createdDate?.toISOString()}</TableCell>
                 <TableCell>
                   <Button
                     variant="outlined"
@@ -92,10 +102,24 @@ const TicketApp = () => {
       </TableContainer>
 
       <Dialog open={open} onClose={handleClose}>
-        {open && <TicketForm ticket={currentTicket} onClose={handleClose} />}
+        {open && (
+          <TicketForm
+            ticket={currentTicket}
+            onClose={handleClose}
+            onSave={handleSave}
+            saving={saveTicketMutation.isLoading}
+          />
+        )}
+        {/* {open && (
+            <TicketFormV2
+              ticket={currentTicket}
+              onClose={handleClose}
+              onSave={handleSave}
+            />
+          )} */}
       </Dialog>
     </div>
   )
 }
 
-export default TicketApp
+export default App
