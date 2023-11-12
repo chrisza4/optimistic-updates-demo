@@ -20,7 +20,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { QueryClient, QueryClientProvider, useQuery } from "react-query"
 import { loadTicket, saveTicket } from "./TicketApi"
-import { useTicketStore } from "./TicketStore"
+import { orderedTicketSelector, useTicketStore } from "./TicketStore"
 
 const queryClient = new QueryClient()
 
@@ -56,7 +56,8 @@ const saveTicketOptimistically = async (ticket: Ticket) => {
 }
 
 const TicketApp = () => {
-  const { tickets, optimisticTickets, setInitialTickets } = useTicketStore()
+  const { optimisticTickets, setInitialTickets } = useTicketStore()
+  const orderedTickets = useTicketStore(orderedTicketSelector)
   const [open, setOpen] = useState(false)
   const [currentTicket, setCurrentTicket] = useState(initialTicket)
   const { isFetching } = useQuery(
@@ -121,7 +122,7 @@ const TicketApp = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {Object.values(tickets).map((ticket, index) => (
+              {Object.values(orderedTickets).map((ticket, index) => (
                 <TableRow key={index}>
                   <TableCell>{ticket.title}</TableCell>
                   <TableCell>{ticket.description}</TableCell>

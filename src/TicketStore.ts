@@ -20,20 +20,31 @@ type OptimisticTicket = Ticket & OptimisticEntity
 type TicketStore = {
   tickets: { [k: string]: Ticket }
   optimisticTickets: { [k: string]: OptimisticTicket }
+  order: string[]
   storeTicketInOptimisticUpdates: (ticket: Ticket) => void
   settledTicket: (ticket: Ticket) => void
   markTicketSaveFailed: (id: string) => void
   setInitialTickets: (tickets: Ticket[]) => void
 }
+export const orderedTicketSelector = (state: TicketStore) =>
+  state.order.reduce<Ticket[]>((acc, id) => {
+    const thisTicket = state.tickets[id]
+    if (thisTicket) {
+      acc.push(thisTicket)
+    }
+    return acc
+  }, [])
 export const useTicketStore = create<TicketStore>((set) => ({
   tickets: {},
   optimisticTickets: {},
+  order: [],
   setInitialTickets: (tickets: Ticket[]) =>
     set((state) => {
       return {
         ...state,
         tickets: toMapById(tickets),
         optimisticTickets: {},
+        order: tickets.map((t) => t.id),
       }
     }),
   storeTicketInOptimisticUpdates: (ticket: Ticket) => {
