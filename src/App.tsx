@@ -12,9 +12,11 @@ import {
   Dialog,
   CircularProgress,
 } from "@mui/material"
+import * as uuid from "uuid"
 import EditIcon from "@mui/icons-material/Edit"
 import ErrorIcon from "@mui/icons-material/Error"
 import TicketForm from "./TicketFormV3"
+import AddIcon from "@mui/icons-material/Add"
 import { Ticket } from "./Ticket"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
@@ -46,9 +48,7 @@ const App = () => {
 const saveTicketOptimistically = async (ticket: Ticket) => {
   useTicketStore.getState().storeTicketInOptimisticUpdates(ticket)
   try {
-    console.log(ticket)
     await saveTicket(ticket)
-    console.log(ticket)
     useTicketStore.getState().settledTicket(ticket)
   } catch (err) {
     useTicketStore.getState().markTicketSaveFailed(ticket.id)
@@ -77,7 +77,11 @@ const TicketApp = () => {
     setOpen(false)
     saveTicketOptimistically(ticket)
   }
-
+  const handleAdd = () => {
+    const newTicket = { ...initialTicket, id: uuid.v4() }
+    setCurrentTicket(newTicket)
+    setOpen(true)
+  }
   const handleClose = () => {
     setOpen(false)
   }
@@ -87,63 +91,78 @@ const TicketApp = () => {
       <h1>Ticket App</h1>
       {isFetching && <CircularProgress />}
       {!isFetching && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Due Date</TableCell>
-                <TableCell>Requester</TableCell>
-                <TableCell>Created Date</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.values(optimisticTickets).map((ticket, index) => (
-                <TableRow key={index}>
-                  <TableCell>{ticket.title}</TableCell>
-                  <TableCell>{ticket.description}</TableCell>
-                  <TableCell>{ticket.dueDate?.toISOString()}</TableCell>
-                  <TableCell>{ticket.requester}</TableCell>
-                  <TableCell>{ticket.createdDate?.toISOString()}</TableCell>
-                  <TableCell>
-                    {ticket.status === "saving" && <CircularProgress />}
-                    {ticket.status === "failed" && (
+        <div>
+          <div>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAdd}
+            >
+              Add
+            </Button>
+          </div>
+          {/* spacer */}
+          <div style={{ height: 20 }} />
+          {/* end spacer */}
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Due Date</TableCell>
+                  <TableCell>Requester</TableCell>
+                  <TableCell>Created Date</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.values(optimisticTickets).map((ticket, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{ticket.title}</TableCell>
+                    <TableCell>{ticket.description}</TableCell>
+                    <TableCell>{ticket.dueDate?.toISOString()}</TableCell>
+                    <TableCell>{ticket.requester}</TableCell>
+                    <TableCell>{ticket.createdDate?.toISOString()}</TableCell>
+                    <TableCell>
+                      {ticket.status === "saving" && <CircularProgress />}
+                      {ticket.status === "failed" && (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          startIcon={<ErrorIcon />}
+                          onClick={() => handleSave(ticket)}
+                        >
+                          Resave
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {Object.values(orderedTickets).map((ticket, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{ticket.title}</TableCell>
+                    <TableCell>{ticket.description}</TableCell>
+                    <TableCell>{ticket.dueDate?.toISOString()}</TableCell>
+                    <TableCell>{ticket.requester}</TableCell>
+                    <TableCell>{ticket.createdDate?.toISOString()}</TableCell>
+                    <TableCell>
                       <Button
                         variant="outlined"
-                        color="error"
-                        startIcon={<ErrorIcon />}
-                        onClick={() => handleSave(ticket)}
+                        color="primary"
+                        startIcon={<EditIcon />}
+                        onClick={() => handleOpen(ticket)}
                       >
-                        Resave
+                        Edit
                       </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {Object.values(orderedTickets).map((ticket, index) => (
-                <TableRow key={index}>
-                  <TableCell>{ticket.title}</TableCell>
-                  <TableCell>{ticket.description}</TableCell>
-                  <TableCell>{ticket.dueDate?.toISOString()}</TableCell>
-                  <TableCell>{ticket.requester}</TableCell>
-                  <TableCell>{ticket.createdDate?.toISOString()}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      startIcon={<EditIcon />}
-                      onClick={() => handleOpen(ticket)}
-                    >
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
       )}
 
       <Dialog open={open} onClose={handleClose}>

@@ -70,10 +70,14 @@ export const useTicketStore = create<TicketStore>((set) => ({
       const { [ticket.id]: __, ...newTickets } = state.tickets
       const { [ticket.id]: _, ...newOptimisticTickets } =
         state.optimisticTickets
+      const newOrder = state.order.includes(ticket.id)
+        ? state.order
+        : [ticket.id, ...state.order]
       return {
         ...state,
         tickets: { ...newTickets, [ticket.id]: ticket },
         optimisticTickets: newOptimisticTickets,
+        order: newOrder,
       }
     })
   },
