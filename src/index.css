@@ -31,6 +31,9 @@ body {
   min-height: 100vh;
   align-items: start;
 }
+#root {
+  width: 100%;
+}
 
 h1 {
   font-size: 3.2em;

@@ -21,7 +21,7 @@ export type Ticket = {
 export function generateMockTicket(): Ticket {
   return {
     id: chance.guid(),
-    title: chance.sentence(),
+    title: chance.word(),
     description: chance.sentence(),
     dueDate: chance.date({
       year: 2023,
